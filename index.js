@@ -37,7 +37,7 @@ app.get('/getorder', function (req, res) {
     .set('Content-Type', 'application/x-www-form-urlencoded')
     .send('OrderId=' + orderid)
     .end(function (err, sres) {
-//		    	console.log(sres);
+      // console.log(sres);
       if(err || !sres.ok){
         console.log(sres);
         res.send(orderid + ' 查询失败')
