@@ -76,7 +76,7 @@
         if (tx.indexOf('已收件') + 1 || tx.indexOf('发往') + 1 || tx.indexOf('已清关') + 1 || tx.indexOf('到达') + 1 || tx.indexOf('投递') + 1 || tx.indexOf('派送') + 1) {
           tr.attr('class', 'info')
         }
-        if (tx.indexOf('签收') + 1) {
+        if (tx.indexOf('已妥投') + 1 || tx.indexOf('签收') + 1) {
           tr.attr('class', 'success')
         }
         if (tx.indexOf('未妥投') + 1 || tx.indexOf('查询失败') + 1) {
