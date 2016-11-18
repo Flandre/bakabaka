@@ -1,9 +1,17 @@
 var express = require('express');
-var app = express();
 var superagent = require('superagent');
 var fs = require('fs');
 var path = require('path');
 const opn = require('opn');
+
+opn('http://localhost:8088', {app: 'chrome'});
+
+var multer  = require('multer')
+var upload = multer({storage: multer.memoryStorage() })
+var app = express();
+
+
+//var router = express.Router();
 
 app.listen('8088', function () {
   console.log('server started');
@@ -11,6 +19,16 @@ app.listen('8088', function () {
 });
 
 opn('http://localhost:8088', {app: 'chrome'});
+
+
+app.post('/upload',upload.single('filename'),function(req, res,next) {
+    console.log(req.file);
+    fs.writeFileSync("fff",req.file.buffer);
+    res.send("uploaded");
+});
+
+
+
 
 app.get('/getorder', function (req, res) {
   var querydata = req.query;
