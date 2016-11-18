@@ -35,6 +35,7 @@
         iframe.onload = function () {
           count++;
           var info = this.contentWindow.document.body.innerText;
+          // console.log(info);
           dataHash[info.substr(0, 12)] = info.substr(13).replace(/\r\n/g, '');
         };
         document.getElementById('main').appendChild(iframe);

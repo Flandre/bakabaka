@@ -31,7 +31,7 @@ app.get('/getorder', function (req, res) {
         var hback = '<table class="webpost_query_table">';
         var n2 = s1.indexOf(hback);
         var resp = s1.substring(0, n2);
-        res.send(resp.substring(resp.indexOf('<h2>'), resp.indexOf('</h2>')));
+        res.send(resp.substring(resp.indexOf('<h2>') + 4, resp.indexOf('</h2>')));
       }
     });
 });
