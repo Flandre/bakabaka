@@ -2,3 +2,5 @@
 node_modules
 bill.json
 debug.log
+*.xlsx
+npm-debug.log
