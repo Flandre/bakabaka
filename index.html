@@ -73,7 +73,7 @@
           tr.append(td);
         }
         var tx = tr.find('td:last').text();
-        if (tx.indexOf('已收件') + 1 || tx.indexOf('发往') + 1 || tx.indexOf('已清关') + 1 || tx.indexOf('到达') + 1 || tx.indexOf('投递') + 1 || tx.indexOf('派送') + 1) {
+        if (tx.indexOf('已收件') + 1 || tx.indexOf('发往') + 1 || tx.indexOf('已清关') + 1 || tx.indexOf('到达') + 1 || tx.indexOf('投递') + 1 || tx.indexOf('派送') + 1 || tx.indexOf('已收寄') + 1 || tx.indexOf('已收取快件') + 1) {
           tr.attr('class', 'info')
         }
         if (tx.indexOf('已妥投') + 1 || tx.indexOf('签收') + 1) {
@@ -98,10 +98,10 @@
 </head>
 <body>
 <div class="container actions">
-  <form action="/upload" method="post">
+  <!--form action="/upload" method="post">
     <input type="file" />
     <input type="submit" value="Submit" />
-  </form>
+  </form-->
   <button class="btn btn-default" onclick="search();">查询</button>
   <div class="progress">
     <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0"
