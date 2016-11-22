@@ -24,25 +24,40 @@
     });
 
     function search() {
+      var t1 = new Date().getTime();
       $('#main').empty();
       $('.progress').show();
       var dataHash = {}, count = 0;
       for (var i in data) {
-        var iframe = document.createElement("iframe");
+        /*
+        
         iframe.src = "/getorder?d=" + data[i].code;
         iframe.style.display = 'none';
-
         iframe.onload = function () {
           count++;
           var info = this.contentWindow.document.body.innerText;
           // console.log(info);
           dataHash[info.substr(0, 12)] = info.substr(13).replace(/\r\n/g, '');
-        };
+          */
+          var iframe = document.createElement("div");
+        $.get('/getorder?d='+data[i].code,function(response,status){
+          if(status=='success'){
+            count++;
+            var info = response;
+            iframe.innerHTML = response;
+            dataHash[info.substr(0, 12)] = info.substr(13).replace(/\r\n/g, '');
+          } 
+        });
         document.getElementById('main').appendChild(iframe);
       }
+
+
+
       _see();
       function _see() {
         if (data.length == count) {
+          var t2 = new Date().getTime();
+          console.log("time cost:"+(t2-t1));
           $('.progress-bar').css('width', '100%');
           $('.progress-bar').text('100%');
           for (var i in data) {
