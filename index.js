@@ -16,6 +16,7 @@ var app = express();
 app.listen('8088', function () {
   console.log('server started');
   console.log('http://localhost:8088');
+  preload();
 });
 
 opn('http://localhost:8088', {app: 'chrome'});
@@ -28,15 +29,74 @@ app.post('/upload',upload.single('filename'),function(req, res,next) {
 });
 
 
+var waitinglist = [];
+var nowloading = 0;
+
+
+var resultmap = {};
+function preload(){
+  var datastr = fs.readFileSync('bill.json', 'utf-8');
+  var data = eval("("+datastr+")");
+  for(var i=0;i<data.length;i++){
+    var code = data[i].code;
+    fecth(code);
+  }
+}
+
+function fecth(orderid){
+    superagent.post('http://www.cnpex.com.au/Home/Query')
+    .set('Content-Type', 'application/x-www-form-urlencoded')
+    .send('OrderId=' + orderid)
+    .end(function (err, sres) {
+        var result = 'unknown';
+        if(err || !sres.ok){
+        console.log(sres);
+        result = orderid + ' 查询失败';
+      } else {
+        var allhtml = sres.text;
+        var hfront = '<div class="wrap pd20">';
+        var n = allhtml.indexOf(hfront);
+        var s1 = allhtml.substring(n + hfront.length);
+        var hback = '<table class="webpost_query_table">';
+        var n2 = s1.indexOf(hback);
+        var resp = s1.substring(0, n2);
+        result = resp.substring(resp.indexOf('<h2>') + 4, resp.indexOf('</h2>'));
+      }
+       resultmap[orderid]=result;
+    });
+}
+
+function getorder(orderid){
+
+}
 
 
 app.get('/getorder', function (req, res) {
   var querydata = req.query;
   var orderid = querydata.d;
+  getorderResponse(orderid,res);
+});
+
+function getorderResponse(orderid,res){
+  if(resultmap[orderid]==undefined){
+     setTimeout(function(){
+          getorderResponse(orderid,res);
+    },2000);
+  }else{
+    res.send(resultmap[orderid]);
+  }
+}
+
+app.get('/getorder2', function (req, res) {
+  var querydata = req.query;
+  var orderid = querydata.d;
+  nowloading++;
   superagent.post('http://www.cnpex.com.au/Home/Query')
     .set('Content-Type', 'application/x-www-form-urlencoded')
     .send('OrderId=' + orderid)
     .end(function (err, sres) {
+      nowloading--;
+      console.log("now loading:"+nowloading);
       // console.log(sres);
       if(err || !sres.ok){
         console.log(sres);
