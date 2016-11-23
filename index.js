@@ -29,14 +29,19 @@ app.post('/upload',upload.single('filename'),function(req, res,next) {
 });
 
 
-var waitinglist = [];
+var errormap={};
+var startts =0;
 var nowloading = 0;
-
+var totallength=0;
 
 var resultmap = {};
 function preload(){
+  if(nowloading==0){
+    startts=new Date().getTime();
+  }
   var datastr = fs.readFileSync('bill.json', 'utf-8');
   var data = eval("("+datastr+")");
+  totallength = data.length;
   for(var i=0;i<data.length;i++){
     var code = data[i].code;
     fecth(code);
@@ -44,7 +49,6 @@ function preload(){
 }
 
 function fecth(orderid){
-  
 var options = {  
     hostname: 'www.cnpex.com.au',  
     port: 80,  
@@ -67,18 +71,48 @@ var req = http.request(options, function (res) {
         var n2 = s1.indexOf(hback);
         var resp = s1.substring(0, n2);
         result = resp.substring(resp.indexOf('<h2>') + 4, resp.indexOf('</h2>'));
-        if(result.length>3){
+        if(resultmap[orderid]==undefined&&result.length>3){
           resultmap[orderid]=result;
+          nowloading++;
+          console.log("finish order:"+orderid+",finished:"+nowloading+",remain:"+(totallength-nowloading));
+          if(totallength==nowloading){
+            var now = new Date().getTime();
+            console.log("time cost:"+(now-startts));
+          }
+          req.end();
         }
     });  
 });  
-  
+req.setTimeout(5000,function(){
+    if(resultmap[orderid]==undefined){
+      handleError(orderid);  
+    }
+    
+});  
 req.on('error', function (e) {  
-    resultmap[orderid]=orderid + ' 查询失败';
-    console.log('problem with request: ' + e.message);  
+    handleError(orderid);
 });  
 req.write('OrderId=' + orderid);  
 req.end(); 
+}
+
+function handleError(orderid){
+    if(errormap[orderid]==undefined){
+      errormap[orderid]=1;
+      fecth(orderid);
+    }else if(errormap[orderid]<3){
+      errormap[orderid]=errormap[orderid]+1;
+      fecth(orderid);
+    }else{
+      nowloading++;
+      console.log(orderid+ ' 查询失败');
+      resultmap[orderid]=orderid + ' 查询失败';
+      console.log("finish order:"+orderid+",total finished:"+nowloading+",remain:"+(totallength-nowloading));
+      if(totallength==nowloading){
+            var now = new Date().getTime();
+            console.log("time cost:"+(now-startts));
+       }
+    }
 }
 
   /*
@@ -102,6 +136,7 @@ req.end();
 
 
 app.get('/getorder', function (req, res) {
+
   var querydata = req.query;
   var orderid = querydata.d;
   getorderResponse(orderid,res);
