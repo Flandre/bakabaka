@@ -1,7 +1,7 @@
 var express = require('express');
-var superagent = require('superagent');
 var fs = require('fs');
 var path = require('path');
+var http = require('http');
 const opn = require('opn');
 
 opn('http://localhost:8088', {app: 'chrome'});
@@ -44,6 +44,44 @@ function preload(){
 }
 
 function fecth(orderid){
+  
+var options = {  
+    hostname: 'www.cnpex.com.au',  
+    port: 80,  
+    path: '/Home/Query',  
+    method: 'POST',  
+    headers: {  
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'  
+    }  
+};  
+  
+var req = http.request(options, function (res) {  
+    res.setEncoding('utf8');  
+    res.on('data', function (chunk) {  
+        //console.log(chunk);
+        var allhtml = chunk;
+        var hfront = '<div class="wrap pd20">';
+        var n = allhtml.indexOf(hfront);
+        var s1 = allhtml.substring(n + hfront.length);
+        var hback = '<table class="webpost_query_table">';
+        var n2 = s1.indexOf(hback);
+        var resp = s1.substring(0, n2);
+        result = resp.substring(resp.indexOf('<h2>') + 4, resp.indexOf('</h2>'));
+        if(result.length>3){
+          resultmap[orderid]=result;
+        }
+    });  
+});  
+  
+req.on('error', function (e) {  
+    resultmap[orderid]=orderid + ' 查询失败';
+    console.log('problem with request: ' + e.message);  
+});  
+req.write('OrderId=' + orderid);  
+req.end(); 
+}
+
+  /*
     superagent.post('http://www.cnpex.com.au/Home/Query')
     .set('Content-Type', 'application/x-www-form-urlencoded')
     .send('OrderId=' + orderid)
@@ -53,22 +91,14 @@ function fecth(orderid){
         console.log(sres);
         result = orderid + ' 查询失败';
       } else {
-        var allhtml = sres.text;
-        var hfront = '<div class="wrap pd20">';
-        var n = allhtml.indexOf(hfront);
-        var s1 = allhtml.substring(n + hfront.length);
-        var hback = '<table class="webpost_query_table">';
-        var n2 = s1.indexOf(hback);
-        var resp = s1.substring(0, n2);
-        result = resp.substring(resp.indexOf('<h2>') + 4, resp.indexOf('</h2>'));
+
       }
        resultmap[orderid]=result;
     });
-}
+*/
 
-function getorder(orderid){
 
-}
+
 
 
 app.get('/getorder', function (req, res) {
@@ -86,33 +116,6 @@ function getorderResponse(orderid,res){
     res.send(resultmap[orderid]);
   }
 }
-
-app.get('/getorder2', function (req, res) {
-  var querydata = req.query;
-  var orderid = querydata.d;
-  nowloading++;
-  superagent.post('http://www.cnpex.com.au/Home/Query')
-    .set('Content-Type', 'application/x-www-form-urlencoded')
-    .send('OrderId=' + orderid)
-    .end(function (err, sres) {
-      nowloading--;
-      console.log("now loading:"+nowloading);
-      // console.log(sres);
-      if(err || !sres.ok){
-        console.log(sres);
-        res.send(orderid + ' 查询失败')
-      } else {
-        var allhtml = sres.text;
-        var hfront = '<div class="wrap pd20">';
-        var n = allhtml.indexOf(hfront);
-        var s1 = allhtml.substring(n + hfront.length);
-        var hback = '<table class="webpost_query_table">';
-        var n2 = s1.indexOf(hback);
-        var resp = s1.substring(0, n2);
-        res.send(resp.substring(resp.indexOf('<h2>') + 4, resp.indexOf('</h2>')));
-      }
-    });
-});
 
 app.get('/', function (req, res) {
   var data = fs.readFileSync('index.html', 'utf-8');
